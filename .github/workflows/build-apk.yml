@@ -24,23 +24,16 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 36
-          ndk-version: r27c
+          accept-android-sdk-licenses: true
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
 
-      - name: Install SDK components (with retry)
+      - name: Verify SDK
         run: |
-          for i in {1..5}; do
-            echo "🔄 尝试 $i/5 安装 SDK"
-            yes | sdkmanager --licenses || true
-            if sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "platform-tools"; then
-              echo "✅ SDK 安装完成"
-              exit 0
-            fi
-            echo "⚠️ 第 $i 次失败，10s 后重试"
-            sleep 10
-          done
-          echo "❌ 5 次都失败"
-          exit 1
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          sdkmanager --list_installed | head -n 40
 
       - name: Setup Gradle (cache)
         uses: gradle/actions/setup-gradle@v4
@@ -55,18 +48,11 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :app:assembleDebug --stacktrace --no-daemon
 
-      - name: Dump build log on failure
-        if: failure()
-        run: |
-          echo '=== test/build errors ==='
-          tail -n 300 app/build/outputs/logs/manifest-merger-debug-report.txt 2>/dev/null || true
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: xuanxingnihe-debug-apk
           path: |
             app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/debug/output-metadata.json
           if-no-files-found: error
           retention-days: 30
