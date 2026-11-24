@@ -33,6 +33,19 @@ android {
         //         arguments += listOf("-DANDROID_STL=c++_shared")
         //     }
         // }
+        packagingOptions {
+        resources {
+            // 遇到同名资源，保留主模块的，丢弃依赖库的
+            pickFirsts += listOf(
+                "**/styles.xml",
+                "**/themes.xml",
+                "**/colors.xml",
+                "**/strings.xml"
+            )
+            // 或者更激进：所有重复资源都 pickFirst
+            // pickFirsts += "**/*"
+            }
+        }
     }
 
     buildFeatures {
