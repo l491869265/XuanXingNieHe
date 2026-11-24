@@ -11,12 +11,13 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -24,16 +25,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          accept-android-sdk-licenses: true
           packages: |
-            platform-tools
             platforms;android-36
             build-tools;36.0.0
-
-      - name: Verify SDK
-        run: |
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          sdkmanager --list_installed | head -n 40
+            platform-tools
+          accept-android-sdk-licenses: 'yes'
 
       - name: Setup Gradle (cache)
         uses: gradle/actions/setup-gradle@v4
@@ -54,5 +50,6 @@ jobs:
           name: xuanxingnihe-debug-apk
           path: |
             app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/debug/output-metadata.json
           if-no-files-found: error
           retention-days: 30
